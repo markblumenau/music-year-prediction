@@ -13,8 +13,8 @@ def train(cfg: DictConfig):
     model = LinearModel(
         block_count=cfg.model.get("block_count", 3),
         input_size=cfg.model.get("input_size", train_dataset.features),
-        hidden_size=cfg.model.get("output_size", 100),
-        output_size=cfg.model.get("output_size", 1),
+        hidden_size=cfg.model.get("hidden_size", 1000),
+        output_size=cfg.model.get("output_size", train_dataset.out),
         mean_x=train_dataset.mean_x,
         std_x=train_dataset.std_x,
         mean_y=train_dataset.mean_y,
@@ -28,6 +28,7 @@ def train(cfg: DictConfig):
         train_dataset,
         valid_dataset,
         logger,
+        epochs=cfg.trainer.get("epochs", 5),
         batch_size=cfg.trainer.get("batch_size", 1024),
     )
     trainer.train()

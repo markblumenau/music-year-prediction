@@ -14,7 +14,7 @@ def get_optimizer(params, cfg: DictConfig):
 
 
 def make_datasets(train_size: int = 463715):
-    with dvc.api.open("data/data.txt.zip") as f:
+    with dvc.api.open("./data/YearPredictionMSD.txt") as f:
         df = pd.read_csv(f, header=None)
         # Yep, one letter names, but they are very obvious
         # y = f(x)

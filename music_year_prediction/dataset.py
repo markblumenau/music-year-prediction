@@ -9,6 +9,8 @@ class MusicDataset(torch.utils.data.Dataset):
         self.std_x = std_x
         self.mean_y = mean_y
         self.std_y = std_y
+        self.features = x.shape[1]
+        self.out = 1
 
     def __len__(self):
         return self.x.shape[0]

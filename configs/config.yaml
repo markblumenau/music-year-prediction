@@ -1,0 +1,17 @@
+defaults:
+    - _self_
+
+model:
+    block_count: 5
+    hidden_size: 1000
+    save_name: "model.pth"
+
+optim:
+    optim_type: "Adam"
+
+trainer:
+    epochs: 3
+    batch_size: 4096
+
+dataset:
+    train_size: 463715

@@ -15,11 +15,12 @@ class LinearBlock((nn.Module)):
                 nn.BatchNorm1d(hidden_size),
                 nn.LeakyReLU(),
             )
-        self.fc = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size),
-            nn.BatchNorm1d(hidden_size),
-            nn.LeakyReLU(),
-        )
+        else:
+            self.fc = nn.Sequential(
+                nn.Linear(hidden_size, hidden_size),
+                nn.BatchNorm1d(hidden_size),
+                nn.LeakyReLU(),
+            )
 
     def forward(self, x):
         return self.fc(x)
@@ -41,9 +42,9 @@ class LinearModel((nn.Module)):
         input = LinearBlock(hidden_size, input_size)
         hidden_blocks = []
         for _i in range(block_count):
-            self.hidden_blocks.append(LinearBlock(hidden_size))
+            hidden_blocks.append(LinearBlock(hidden_size))
         output = nn.Linear(hidden_size, output_size)
-        self.actual_model = nn.Sequential(input, hidden_blocks, output)
+        self.actual_model = nn.Sequential(input, *hidden_blocks, output)
         self.mean_x = mean_x
         self.std_x = std_x
         self.mean_y = mean_y
@@ -53,7 +54,7 @@ class LinearModel((nn.Module)):
         # I am fully aware that the following lines are rather bad
         # But the whole point of this repo is to learn MLOps, not to make great models
         x = (x - self.mean_x) / self.std_x
-        return self.model(x) * self.std_y + self.mean_y
+        return self.actual_model(x) * self.std_y + self.mean_y
 
     def load(self, pull_dvc: bool = True, load_name: str = None):
         if pull_dvc:
