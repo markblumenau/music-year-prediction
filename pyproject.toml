@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "music_year_prediction"
+version = "0.1.0"
+description = "A simple demo package for MLOps course @ HSE MLHLS. Solves a task of guessing the year of the song."
+authors = ["Mark Blumenau <burunduk10@inbox.ru>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "~3.9"
+torch = "^2.1.2"
+dvc = "^3.36.1"
+dvc-gdrive = "^3.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.6.0"
+
+[tool.black]
+line-length = 90
+target-version = ["py39"]
+
+[tool.isort]
+src_paths = ["ds_project"]
+profile = "black"
+line_length = 90
+lines_after_imports = 2
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
