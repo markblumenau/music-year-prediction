@@ -87,9 +87,9 @@ class Trainer:
                         ),
                     }
                 )
-            self.logger.finalize()
         if save_name:
             self.save(save_name)
+        self.logger.finalize()
 
     def save(self, save_name: Union[Path, str] = "./models/model.safetensors"):
         if save_name is str:
