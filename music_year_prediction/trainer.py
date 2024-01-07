@@ -1,5 +1,9 @@
+from pathlib import Path
+from typing import Union
+
 import numpy as np
 import torch
+from safetensors.torch import save_model
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
@@ -39,9 +43,9 @@ class Trainer:
         self.mean_y = train_dataset.mean_y
         self.std_y = train_dataset.std_y
 
-    def train(self, save_name: str = None):
-        for i in range(self.epochs):
-            print(f"Epoch {i}")
+    def train(self, save_name: Path = None):
+        for epoch in range(self.epochs):
+            print(f"Epoch {epoch}")
             self.model.train()
             for batch in tqdm(self.train_dataloader, desc="Training"):
                 x = batch["x"]
@@ -52,10 +56,14 @@ class Trainer:
                 self.optimizer.step()
                 self.optimizer.zero_grad()
                 accuracy = torch.sum(
-                    y.to(torch.long) == y_predicted.to(torch.long)
+                    y.to(torch.long) == torch.round(y_predicted).to(torch.long)
                 ) / len(y)
-                self.logger.update("train_loss_batch", loss_batch.item())
-                self.logger.update("train_accuracy_batch", float(accuracy))
+                self.logger.update(
+                    {
+                        "train_loss_batch": loss_batch.item(),
+                        "train_accuracy_batch": float(accuracy),
+                    }
+                )
 
             self.model.eval()
             with torch.no_grad():
@@ -70,18 +78,24 @@ class Trainer:
                     loss_total_valid += self.loss(y_predicted, y).item() * len(y)
                     total_len += len(y)
                     y_cls.extend(y.to(torch.long))
-                    y_predicted_cls.extend(y_predicted.to(torch.long))
-                self.logger.update("validation_loss", loss_total_valid / total_len)
+                    y_predicted_cls.extend(torch.round(y_predicted).to(torch.long))
                 self.logger.update(
-                    "validation_accuracy",
-                    float(np.mean(np.array(y_cls) == np.array(y_predicted_cls))),
+                    {
+                        "validation_loss": loss_total_valid / total_len,
+                        "validation_accuracy": float(
+                            np.mean(np.array(y_cls) == np.array(y_predicted_cls))
+                        ),
+                    }
                 )
-
+            self.logger.finalize()
         if save_name:
             self.save(save_name)
 
-    def save(self, save_name: str = "model.pth"):
-        torch.save(self.model.actual_model.state_dict(), save_name)
-        with open(save_name + "info", "w") as f:
+    def save(self, save_name: Union[Path, str] = "./models/model.safetensors"):
+        if save_name is str:
+            save_name = Path(save_name)
+        save_name.mkdir(parents=True, exist_ok=True)
+        save_model(self.model.actual_model, save_name)
+        with open(save_name.with_name("preprocessing.json"), "w") as f:
             f.write(str(self.mean_x) + "\n" + f.write(str(self.std_x)) + "\n")
             f.write(str(self.mean_y) + "\n" + f.write(str(self.std_y)))

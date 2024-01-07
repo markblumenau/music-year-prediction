@@ -1,8 +1,9 @@
 import os
 import warnings
+from pathlib import Path
 
 import dvc.api
-import torch
+from safetensors.torch import load_model
 from torch import nn
 
 
@@ -56,28 +57,28 @@ class LinearModel((nn.Module)):
         x = (x - self.mean_x) / self.std_x
         return self.actual_model(x) * self.std_y + self.mean_y
 
-    def load(self, pull_dvc: bool = True, load_name: str = None):
+    def load(self, pull_dvc: bool = True, load_name: Path = None):
         if pull_dvc:
-            with dvc.api.open("models/model.pth") as f:
-                self.actual_model.load_state_dict(torch.load(f))
-                self.actual_model.eval()
-            with dvc.api.open("models/model.pthinfo") as file:
-                with open(file, "r") as f:
-                    self.mean_x = float(f.readline())
-                    self.std_x = float(f.readline())
-                    self.mean_y = float(f.readline())
-                    self.std_y = float(f.readline())
+            with dvc.api.DVCFileSystem() as fs:
+                fs.get("models", "models")
+            load_model(self.actual_model, "./models/model.safetensors")
+            self.actual_model.eval()
+            with open("./models/preprocessing.json") as f:
+                self.mean_x = float(f.readline())
+                self.std_x = float(f.readline())
+                self.mean_y = float(f.readline())
+                self.std_y = float(f.readline())
         elif load_name:
             if os.path.isfile(load_name):
-                self.actual_model.load_state_dict(torch.load(load_name))
+                load_model(self.actual_model, load_name)
                 self.actual_model.eval()
             else:
                 warnings.warn(
                     "You tried to load model with a nonexistent weight file, skipping.",
                     stacklevel=2,
                 )
-            if os.path.isfile(load_name + "info"):
-                with open(load_name + "info", "r") as f:
+            if os.path.isfile(load_name.with_name("preprocessing.json")):
+                with open(load_name.with_name("preprocessing.json"), "r") as f:
                     self.mean_x = float(f.readline())
                     self.std_x = float(f.readline())
                     self.mean_y = float(f.readline())
