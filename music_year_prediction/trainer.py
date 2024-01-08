@@ -1,9 +1,7 @@
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import torch
-from safetensors.torch import save_model
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
@@ -24,7 +22,10 @@ class Trainer:
         logger: Logger,
         epochs: int = 5,
         batch_size: int = 1024,
+        save_name: Path = None,
     ):
+        thread_count = torch.get_num_threads()
+        torch.set_num_threads(thread_count)
         self.model = model
         self.optimizer = optimizer
         self.train_dataloader = DataLoader(
@@ -38,26 +39,23 @@ class Trainer:
 
         self.epochs = epochs
 
-        self.mean_x = train_dataset.mean_x
-        self.std_x = train_dataset.std_x
-        self.mean_y = train_dataset.mean_y
-        self.std_y = train_dataset.std_y
+        self.save_name = save_name
 
-    def train(self, save_name: Path = None):
+    def train(self):
         for epoch in range(self.epochs):
             print(f"Epoch {epoch}")
             self.model.train()
             for batch in tqdm(self.train_dataloader, desc="Training"):
-                x = batch["x"]
-                y = batch["y"]
-                y_predicted = self.model(x).squeeze()
-                loss_batch = self.loss(y_predicted, y)
+                features = batch["features"]
+                target = batch["target"]
+                predicted = self.model(features).squeeze()
+                loss_batch = self.loss(predicted, target)
                 loss_batch.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad()
                 accuracy = torch.sum(
-                    y.to(torch.long) == torch.round(y_predicted).to(torch.long)
-                ) / len(y)
+                    target.to(torch.long) == torch.round(predicted).to(torch.long)
+                ) / len(target)
                 self.logger.update(
                     {
                         "train_loss_batch": loss_batch.item(),
@@ -69,33 +67,24 @@ class Trainer:
             with torch.no_grad():
                 loss_total_valid = 0
                 total_len = 0
-                y_cls = []
-                y_predicted_cls = []
+                target_cls = []
+                predicted_cls = []
                 for batch in tqdm(self.valid_dataloader, desc="Validation"):
-                    x = batch["x"]
-                    y = batch["y"]
-                    y_predicted = self.model(x).squeeze()
-                    loss_total_valid += self.loss(y_predicted, y).item() * len(y)
-                    total_len += len(y)
-                    y_cls.extend(y.to(torch.long))
-                    y_predicted_cls.extend(torch.round(y_predicted).to(torch.long))
+                    features = batch["features"]
+                    target = batch["target"]
+                    predicted = self.model(features).squeeze()
+                    loss_total_valid += self.loss(predicted, target).item() * len(target)
+                    total_len += len(target)
+                    target_cls.extend(target.to(torch.long))
+                    predicted_cls.extend(torch.round(predicted).to(torch.long))
                 self.logger.update(
                     {
                         "validation_loss": loss_total_valid / total_len,
                         "validation_accuracy": float(
-                            np.mean(np.array(y_cls) == np.array(y_predicted_cls))
+                            np.mean(np.array(target_cls) == np.array(predicted_cls))
                         ),
                     }
                 )
-        if save_name:
-            self.save(save_name)
+        if self.save_name:
+            self.model.save(self.save_name)
         self.logger.finalize()
-
-    def save(self, save_name: Union[Path, str] = "./models/model.safetensors"):
-        if save_name is str:
-            save_name = Path(save_name)
-        save_name.parents[0].mkdir(parents=True, exist_ok=True)
-        save_model(self.model.actual_model, save_name)
-        with open(save_name.with_name("preprocessing.json"), "w") as f:
-            f.write(str(self.mean_x) + "\n" + str(self.std_x) + "\n")
-            f.write(str(self.mean_y) + "\n" + str(self.std_y))

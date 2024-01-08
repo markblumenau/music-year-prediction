@@ -5,6 +5,7 @@ model:
     block_count: 5
     hidden_size: 1000
     save_name: "./models/model.safetensors"
+    pull_dvc: True
 
 optim:
     optim_type: "Adam"
