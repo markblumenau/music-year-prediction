@@ -36,7 +36,7 @@ def train(cfg: DictConfig):
     trainer.train()
     save_name = cfg.model.get("save_name", None)
     if save_name is not None:
-        trainer.save(save=Path(save_name))
+        trainer.save(save_name=Path(save_name))
     else:
         trainer.save()
 

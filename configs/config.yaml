@@ -4,7 +4,7 @@ defaults:
 model:
     block_count: 5
     hidden_size: 1000
-    save_name: "model.safetensors"
+    save_name: "./models/model.safetensors"
 
 optim:
     optim_type: "Adam"

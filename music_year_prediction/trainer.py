@@ -94,8 +94,8 @@ class Trainer:
     def save(self, save_name: Union[Path, str] = "./models/model.safetensors"):
         if save_name is str:
             save_name = Path(save_name)
-        save_name.mkdir(parents=True, exist_ok=True)
+        save_name.parents[0].mkdir(parents=True, exist_ok=True)
         save_model(self.model.actual_model, save_name)
         with open(save_name.with_name("preprocessing.json"), "w") as f:
-            f.write(str(self.mean_x) + "\n" + f.write(str(self.std_x)) + "\n")
-            f.write(str(self.mean_y) + "\n" + f.write(str(self.std_y)))
+            f.write(str(self.mean_x) + "\n" + str(self.std_x) + "\n")
+            f.write(str(self.mean_y) + "\n" + str(self.std_y))

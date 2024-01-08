@@ -12,7 +12,7 @@ class Logger:
         repo = git.Repo(search_parent_directories=True)
         sha = repo.head.commit.hexsha
         wandb_conf = flatten_json(OmegaConf.to_container(cfg, resolve=True))
-        wandb_conf["code"] = repo.git.rev_parse(sha, short=7)
+        wandb_conf["commit_id"] = repo.git.rev_parse(sha, short=7)
         wandb.init(
             project="music_year_prediction",
             anonymous="must",
