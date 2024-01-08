@@ -93,7 +93,9 @@ class LinearModel((nn.Module)):
 
     def load(self, pull_dvc: bool = True, load_name: Path = None):
         if pull_dvc:
-            # Be
+            # Because dvc.open returns a file
+            # and safetensors wants a path
+            # and under the hood shutil errors on samefile
             fs = dvc.api.DVCFileSystem()
             try:
                 fs.get_file("models/model.safetensors", "models/model.safetensors")
