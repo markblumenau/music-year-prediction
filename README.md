@@ -10,7 +10,29 @@ Prediction of the release year of a song from audio features. Songs are mostly w
 
 For full info see: https://archive.ics.uci.edu/dataset/203/yearpredictionmsd
 
-# Structure
+# Project structure
+
+In no particular order in the ```music_year_prediction``` folder:
+
+* model.py - contains a LinearBlock and a LinearModel
+    * LinearBlock - a basic block, made of Linear, BatchNorm and LeakyReLU
+    * LinearModel - a proper model made from LinearBlocks with some functions for loading/saving/predicting/etc.
+
+* dataset.py - contains a MusicDataset and a function to create train/test sets
+    * MusicDataset - a basic adaptation of torch Dataset
+
+* logger.py - contains a Logger class
+    * Logger - logs metrics with WandB (default) or MLFlow, configurable
+
+* trainer.py - contains a Trainer
+    * Trainer - used to train the model
+
+* utils.py - contains a couple of useful functions
+
+Files ```train.py``` and ```infer.py``` in the repository root contain a bare minimum for you to try this project for yourself.
+
+
+# Config structure
 
 This project uses Hydra for configuration purposes. Parameters can be configured in ./configs/config.yaml and include:
 

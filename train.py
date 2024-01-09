@@ -41,6 +41,7 @@ def train(cfg: DictConfig):
 
 
 def main():
+    # Technically it is more than one function, but the logic here is obvious
     initialize(version_base=None, config_path="configs", job_name="music_year_prediction")
     cfg = compose(config_name="config")
     train(cfg)
