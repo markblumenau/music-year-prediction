@@ -16,3 +16,6 @@ trainer:
 
 dataset:
     train_size: 463715
+
+logger:
+    type: "wandb"

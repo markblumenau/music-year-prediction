@@ -60,7 +60,8 @@ class Trainer:
                     {
                         "train_loss_batch": loss_batch.item(),
                         "train_accuracy_batch": float(accuracy),
-                    }
+                    },
+                    on="train",
                 )
 
             self.model.eval()
@@ -83,7 +84,8 @@ class Trainer:
                         "validation_accuracy": float(
                             np.mean(np.array(target_cls) == np.array(predicted_cls))
                         ),
-                    }
+                    },
+                    on="val",
                 )
         if self.save_name:
             self.model.save(self.save_name)
