@@ -40,8 +40,8 @@ This project uses Hydra for configuration purposes. Parameters can be configured
 # How to run?
 * Clone the repo
 * Create a new virtualenv
-* Install using poetry: ```python poetry install```
-* Install pre-commit: ```python pre-commit install```
-* Check that everything is ok: ```python pre-commit run -a```
-* Run training: ```python python train.py```
-* Run inference: ```python python infer.py ```
+* Install using poetry: ```poetry install```
+* Install pre-commit: ```pre-commit install```
+* Check that everything is ok: ```pre-commit run -a```
+* Run training: ```python train.py```
+* Run inference: ```python infer.py ```
